@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0e766e" />
+    <meta
+      name="description"
+      content="Claude Certified Architect - Foundations を目指す日本語話者向けに、判断軸・英語読解・基礎知識を鍛える学習トレーナー。"
+    />
+    <title>Claude Architect Foundations Trainer</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Claude Certified Architect - Foundations</p>
+        <h1>合格のための読み解きトレーナー</h1>
+      </div>
+      <div class="progress-pill" aria-live="polite">
+        <span id="progressCount">0</span>/<span id="progressTotal">0</span>
+        <span>完了</span>
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <nav class="rail" aria-label="学習メニュー">
+        <button class="nav-btn active" data-view="dashboard">概要</button>
+        <button class="nav-btn" data-view="questions">自作シナリオ特訓</button>
+        <button class="nav-btn" data-view="vocab">英単語ゼロ残し</button>
+        <button class="nav-btn" data-view="domains">出題範囲</button>
+        <button class="nav-btn" data-view="reading">英文読解体力</button>
+        <button class="nav-btn" data-view="exercises">実装練習</button>
+      </nav>
+
+      <section class="workspace">
+        <section id="dashboard" class="view active" aria-labelledby="dashboard-title">
+          <div class="hero-panel">
+            <div>
+              <p class="eyebrow">Study Loop</p>
+              <h2 id="dashboard-title">問題を解く前に、何が問われているかを言語化する</h2>
+              <p>
+                このツールは、公開可能な自作シナリオと基礎知識の整理を通じて、初心者でも判断軸を作れるように設計しています。
+                英語を先に読み、日本語で本質を説明し、それから選択肢を選ぶ流れで鍛えます。
+              </p>
+            </div>
+            <div class="daily-card">
+              <span class="small-label">今日の推奨</span>
+              <strong>25分</strong>
+              <p>自作シナリオ3問、用語15語、英文読解1セット。</p>
+              <button id="startDaily" class="primary">開始</button>
+            </div>
+          </div>
+
+          <div class="metric-grid">
+            <article>
+              <span class="small-label">最重要</span>
+              <h3>自作シナリオ問題</h3>
+              <p>正答だけでなく、設問の本質、ひっかけ選択肢の理由、重要語をセットで確認します。</p>
+            </article>
+            <article>
+              <span class="small-label">落とし穴</span>
+              <h3>英単語</h3>
+              <p>tool_choice、escalation、provenance など、本番で意味が取れないと痛い語を重点化します。</p>
+            </article>
+            <article>
+              <span class="small-label">判断軸</span>
+              <h3>確率的 vs 決定的</h3>
+              <p>プロンプトでお願いするのか、フックや前提条件で強制するのか。多くの問題の核です。</p>
+            </article>
+          </div>
+
+          <section class="study-flow">
+            <h2>使い方</h2>
+            <ol>
+              <li>英文の問題文を翻訳せずに読む。</li>
+              <li>「これは何を聞いている問題か」を1文で書く。</li>
+              <li>分からない英単語を登録する。</li>
+              <li>選択肢を選び、解説で判断軸を確認する。</li>
+              <li>同じ問題を、英語だけで再回答する。</li>
+            </ol>
+          </section>
+        </section>
+
+        <section id="questions" class="view" aria-labelledby="question-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Scenario Drill</p>
+              <h2 id="question-title">自作シナリオ特訓</h2>
+            </div>
+            <div class="segmented" role="group" aria-label="表示モード">
+              <button class="segment active" data-mode="english">英語</button>
+              <button class="segment" data-mode="support">補助あり</button>
+            </div>
+          </div>
+          <div class="question-layout">
+            <aside class="question-list" id="questionList" aria-label="問題一覧"></aside>
+            <article class="question-card">
+              <div class="scenario-line" id="scenarioLine"></div>
+              <h3 id="questionStem"></h3>
+              <div id="supportBox" class="support-box hidden"></div>
+              <label class="essence-box">
+                <span>何が問われている？ 日本語で1文</span>
+                <textarea id="essenceInput" rows="3" placeholder="例: 金銭リスクがある手順はプロンプトではなくプログラムで強制すべきかを問う問題"></textarea>
+              </label>
+              <div id="options" class="options"></div>
+              <div class="question-actions">
+                <button id="checkAnswer" class="primary">答え合わせ</button>
+                <button id="nextQuestion" class="secondary">次へ</button>
+              </div>
+              <div id="answerPanel" class="answer-panel hidden"></div>
+            </article>
+          </div>
+        </section>
+
+        <section id="vocab" class="view" aria-labelledby="vocab-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Vocabulary</p>
+              <h2 id="vocab-title">分からない英単語を一つも残さない</h2>
+            </div>
+            <input id="vocabSearch" class="search" type="search" placeholder="用語を検索" />
+          </div>
+          <div class="vocab-tools">
+            <button id="showUnknownOnly" class="secondary">未習得だけ表示</button>
+            <button id="resetFilters" class="secondary">全表示</button>
+          </div>
+          <div id="vocabGrid" class="vocab-grid"></div>
+        </section>
+
+        <section id="domains" class="view" aria-labelledby="domains-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Exam Blueprint</p>
+              <h2 id="domains-title">出題範囲と重み</h2>
+            </div>
+          </div>
+          <div id="domainGrid" class="domain-grid"></div>
+        </section>
+
+        <section id="reading" class="view" aria-labelledby="reading-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Reading Stamina</p>
+              <h2 id="reading-title">翻訳なしで読み続ける練習</h2>
+            </div>
+            <button id="newReading" class="secondary">別の英文</button>
+          </div>
+          <article class="reading-card">
+            <div class="timer-row">
+              <span id="timer">03:00</span>
+              <button id="startTimer" class="primary">3分読む</button>
+            </div>
+            <p id="readingPassage" class="reading-passage"></p>
+            <div class="reading-prompts">
+              <label>
+                主語と動詞を拾う
+                <input id="readingSv" type="text" placeholder="例: The agent escalates..." />
+              </label>
+              <label>
+                判断軸を拾う
+                <input id="readingDecision" type="text" placeholder="例: prompt guidance vs deterministic enforcement" />
+              </label>
+              <label>
+                未知語
+                <input id="readingUnknown" type="text" placeholder="カンマ区切りで追加" />
+              </label>
+              <button id="saveReading" class="primary">記録</button>
+            </div>
+          </article>
+        </section>
+
+        <section id="exercises" class="view" aria-labelledby="exercise-title">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Hands-on</p>
+              <h2 id="exercise-title">実装練習チェックリスト</h2>
+            </div>
+          </div>
+          <div id="exerciseList" class="exercise-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("service-worker.js").catch(() => {});
+        });
+      }
+    </script>
+  </body>
+</html>
